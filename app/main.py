@@ -3,17 +3,14 @@ import sqlite3
 
 app = Flask(__name__)
 
-# Function to create a new database connection for each request
 def get_db_connection():
     conn = sqlite3.connect('grades.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-# Function to create a new database cursor for each request
 def get_db_cursor(connection):
     return connection.cursor()
 
-# Custom filter: enumerate
 @app.template_filter('enumerate')
 def enumerate_filter(values):
     return zip(range(1, len(values) + 1), values)
@@ -33,18 +30,15 @@ def home():
         conn = get_db_connection()
         c = get_db_cursor(conn)
 
-        # Insert the grade into the database
         c.execute("INSERT INTO grades VALUES (?, ?)", (subject, grade))
         conn.commit()
 
-        # Close the cursor and database connection
         c.close()
         conn.close()
 
     conn = get_db_connection()
     c = get_db_cursor(conn)
 
-    # Fetch all grades from the database
     c.execute("SELECT subject, grade FROM grades")
     rows = c.fetchall()
     subjects = {}
@@ -55,8 +49,7 @@ def home():
             subjects[subject].append(grade)
         else:
             subjects[subject] = [grade]
-
-    # Close the cursor and database connection
+            
     c.close()
     conn.close()
 
@@ -73,17 +66,17 @@ def remove():
     conn = get_db_connection()
     c = get_db_cursor(conn)
 
-    # Fetch all grades for the subject from the database
+    
     c.execute("SELECT rowid FROM grades WHERE subject=? AND grade=?", (subject, grade))
     row = c.fetchone()
 
     if row:
         rowid = row['rowid']
-        # Delete the first occurrence of the grade for the subject from the database
+        
         c.execute("DELETE FROM grades WHERE rowid=?", (rowid,))
         conn.commit()
 
-    # Fetch all grades from the database
+    
     c.execute("SELECT subject, grade FROM grades")
     rows = c.fetchall()
     subjects = {}
@@ -95,7 +88,7 @@ def remove():
         else:
             subjects[subject] = [grade]
 
-    # Close the cursor and database connection
+   
     c.close()
     conn.close()
 
@@ -104,4 +97,4 @@ def remove():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host= '0.0.0.0', debug=True)
